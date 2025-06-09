@@ -2,3 +2,5 @@ numpy>=1.21.0
 colorama==0.4.6
 pydantic==2.5.3
 termcolor==2.4.0
+streamlit==1.32.0
+plotly==5.18.0
