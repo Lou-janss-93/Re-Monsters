@@ -1,5 +1,5 @@
 from typing import Dict, List, Tuple
-from colorinterperter import ColorEmotionInterpreter, AgentDecision
+from colorinterpreter import ColorEmotionInterpreter, AgentDecision
 import json
 from dataclasses import dataclass
 from enum import Enum
@@ -89,6 +89,7 @@ class AgentWhite:
             "dominant_emotions": dict(dominant_emotions),
             "agent_feedbacks": {
                 color: {
+                    "color": fb.color,
                     "emotion_scores": fb.emotion_scores,
                     "confidence": fb.confidence,
                     "suggestion": fb.suggestion
@@ -100,31 +101,96 @@ class AgentWhite:
 def main():
     agent_white = AgentWhite()
     
-    # Test met verschillende contexten
+    # Complex test cases with mixed emotions
     test_contexts = [
+        # Basic emotions
         "Ik ben erg blij met het resultaat!",
         "Ik ben woedend over wat er is gebeurd.",
         "Ik voel me een beetje verdrietig vandaag.",
-        "Ik weet niet wat ik moet doen, ik voel me overweldigd."
+        "Ik weet niet wat ik moet doen, ik voel me overweldigd.",
+        
+        # Complex mixed emotions
+        "Ik ben blij met de promotie, maar ook een beetje nerveus over de nieuwe verantwoordelijkheden.",
+        "Ik voel me gefrustreerd en teleurgesteld, maar probeer positief te blijven.",
+        "Ik ben boos op mezelf omdat ik me zo verdrietig voel over iets kleins.",
+        "Ik ben overweldigd door alle positieve reacties, maar ook een beetje onzeker.",
+        
+        # Subtle emotional nuances
+        "Het is een bitterzoete ervaring, met veel gemengde gevoelens.",
+        "Ik voel me zowel opgelucht als bezorgd over de toekomst.",
+        "Er is een mengeling van trots en nederigheid in mijn hart.",
+        "Ik ervaar een diep gevoel van tevredenheid, maar ook een vleugje melancholie."
     ]
     
     for context in test_contexts:
-        print(f"\nAnalyse van context: {context}")
+        print(f"\n{'='*80}")
+        print(f"Analyse van context: {context}")
+        print(f"{'='*80}")
+        
         response = agent_white.calculate_balanced_response(context)
         
-        print("\nResultaten:")
+        # Color Analysis
+        print("\nKleur Analyse:")
         print(f"Regenboogvector: {response['rainbow_vector']}")
-        print(f"Strategie: {response['strategy']}")
-        print("\nDominante emoties:")
-        for emotion, score in response['dominant_emotions'].items():
-            print(f"- {emotion}: {score:.2f}")
         
-        print("\nAgent feedback:")
+        # Convert to different color spaces
+        from color_utils import ColorConverter
+        converter = ColorConverter()
+        
+        # Convert hex to RGB
+        hex_color = response['rainbow_vector'].lstrip('#')
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+        
+        # Convert to CMYK
+        c, m, y, k = converter.rgb_to_cmyk(r, g, b)
+        print(f"CMYK: C={c:.2f}, M={m:.2f}, Y={y:.2f}, K={k:.2f}")
+        
+        # Convert to LAB
+        l, a, b = converter.rgb_to_lab(r, g, b)
+        print(f"LAB: L*={l:.2f}, a*={a:.2f}, b*={b:.2f}")
+        
+        # Calculate chroma and hue
+        chroma = converter.calculate_chroma(a, b)
+        hue = converter.calculate_hue_angle(a, b)
+        print(f"Chroma: {chroma:.2f}, Hue: {hue:.2f}°")
+        
+        # Emotional Analysis
+        print("\nEmotionele Analyse:")
+        print(f"Strategie: {response['strategy']}")
+        
+        print("\nDominante emoties (met confidence scores):")
+        for emotion, score in response['dominant_emotions'].items():
+            confidence_level = "Hoog" if score > 3.0 else "Medium" if score > 1.0 else "Laag"
+            print(f"- {emotion}: {score:.2f} ({confidence_level})")
+        
+        # Agent Analysis
+        print("\nGedetailleerde Agent Analyse:")
         for color, feedback in response['agent_feedbacks'].items():
-            print(f"\n{color.upper()} Agent:")
-            print(f"Confidence: {feedback['confidence']:.2f}")
-            print(f"Suggestion: {feedback['suggestion']}")
-            print("Emoties:", feedback['emotion_scores'])
+            if feedback['confidence'] > 0:
+                print(f"\n{color.upper()} Agent:")
+                print(f"Confidence: {feedback['confidence']:.2f}")
+                print(f"Suggestion: {feedback['suggestion']}")
+                print("Emotie Scores:")
+                for emotion, score in feedback['emotion_scores'].items():
+                    if score > 0:
+                        print(f"  - {emotion}: {score:.2f}")
+        
+        # Color Harmony Analysis
+        print("\nKleur Harmonie Analyse:")
+        lab_colors = converter.generate_analogous_palette(l, a, b)
+        print("Analogous kleuren:")
+        for lab_color in lab_colors:
+            hex_color = converter.lab_to_hex(*lab_color)
+            print(f"- {hex_color}")
+        
+        # Accessibility Check
+        white_lab = (100, 0, 0)
+        contrast = converter.check_color_contrast((l, a, b), white_lab)
+        print(f"\nToegankelijkheid:")
+        print(f"Contrast ratio: {contrast:.2f}:1")
+        print(f"WCAG AA compliant: {'✓' if contrast >= 4.5 else '✗'}")
 
 if __name__ == "__main__":
     main() 

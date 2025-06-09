@@ -89,6 +89,21 @@ const colorUtils = {
     const g = 255 * (1 - m) * (1 - k);
     const b = 255 * (1 - y) * (1 - k);
     return d3.rgb(r, g, b).formatHex();
+  },
+  generateAnalogousPalette: (L, a, b) => {
+    // Implementation of generateAnalogousPalette method
+  },
+  generateComplementaryPalette: (L, a, b) => {
+    // Implementation of generateComplementaryPalette method
+  },
+  generateTriadicPalette: (L, a, b) => {
+    // Implementation of generateTriadicPalette method
+  },
+  checkColorContrast: (lab1, lab2) => {
+    // Implementation of checkColorContrast method
+  },
+  simulateColorBlindness: (lab, type) => {
+    // Implementation of simulateColorBlindness method
   }
 };
 
@@ -102,6 +117,10 @@ export default function ReMonsterLabUI() {
     analysis: null,
     activeColorSpace: 'LAB'
   });
+
+  const [colorPalette, setColorPalette] = useState([]);
+  const [colorBlindnessType, setColorBlindnessType] = useState('none');
+  const [contrastRatio, setContrastRatio] = useState(null);
 
   const analyzeText = async () => {
     if (!input.trim()) {
@@ -312,6 +331,27 @@ export default function ReMonsterLabUI() {
     }
   }, [state.analysis, state.activeColorSpace]);
 
+  useEffect(() => {
+    if (state.analysis?.rainbow_vector_lab) {
+      // Generate color palettes
+      const lab = state.analysis.rainbow_vector_lab;
+      const analogous = colorUtils.generateAnalogousPalette(lab[0], lab[1], lab[2]);
+      const complementary = colorUtils.generateComplementaryPalette(lab[0], lab[1], lab[2]);
+      const triadic = colorUtils.generateTriadicPalette(lab[0], lab[1], lab[2]);
+      
+      setColorPalette({
+        analogous,
+        complementary,
+        triadic
+      });
+
+      // Calculate contrast ratio with white
+      const whiteLab = [100, 0, 0];
+      const ratio = colorUtils.checkColorContrast(lab, whiteLab);
+      setContrastRatio(ratio);
+    }
+  }, [state.analysis]);
+
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -323,6 +363,37 @@ export default function ReMonsterLabUI() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [input]);
+
+  const renderColorPalette = (palette, title) => (
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <div className="flex gap-2">
+        {palette.map((color, index) => {
+          const hex = colorUtils.labToHex(...color);
+          const simulatedColor = colorBlindnessType !== 'none' 
+            ? colorUtils.simulateColorBlindness(color, colorBlindnessType)
+            : color;
+          const simulatedHex = colorUtils.labToHex(...simulatedColor);
+          
+          return (
+            <div key={index} className="relative group">
+              <div 
+                className="w-12 h-12 rounded-full cursor-pointer transition-transform hover:scale-110"
+                style={{ backgroundColor: hex }}
+                title={`LAB: ${color.map(v => v.toFixed(1)).join(', ')}`}
+              />
+              {colorBlindnessType !== 'none' && (
+                <div 
+                  className="absolute inset-0 rounded-full opacity-50"
+                  style={{ backgroundColor: simulatedHex }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6 space-y-6 max-w-3xl mx-auto">
@@ -453,6 +524,51 @@ export default function ReMonsterLabUI() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Color Accessibility Section */}
+      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+        <h2 className="text-xl font-bold mb-4">Color Accessibility</h2>
+        
+        {/* Contrast Ratio */}
+        {contrastRatio && (
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Contrast Ratio</h3>
+            <div className="flex items-center gap-2">
+              <div className="text-sm">
+                {contrastRatio.toFixed(2)}:1
+              </div>
+              <div className="text-sm text-gray-600">
+                {contrastRatio >= 4.5 ? '✓ WCAG AA Compliant' : '⚠ Needs Improvement'}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Color Blindness Simulation */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">Color Blindness Simulation</h3>
+          <select
+            value={colorBlindnessType}
+            onChange={(e) => setColorBlindnessType(e.target.value)}
+            className="p-2 border rounded"
+          >
+            <option value="none">No Simulation</option>
+            <option value="protanopia">Protanopia (Red-Blind)</option>
+            <option value="deuteranopia">Deuteranopia (Green-Blind)</option>
+            <option value="tritanopia">Tritanopia (Blue-Blind)</option>
+          </select>
+        </div>
+      </div>
+      
+      {/* Color Palettes Section */}
+      {colorPalette.analogous && (
+        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+          <h2 className="text-xl font-bold mb-4">Color Palettes</h2>
+          {renderColorPalette(colorPalette.analogous, 'Analogous Colors')}
+          {renderColorPalette(colorPalette.complementary, 'Complementary Colors')}
+          {renderColorPalette(colorPalette.triadic, 'Triadic Colors')}
+        </div>
+      )}
     </div>
   );
 } 

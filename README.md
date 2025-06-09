@@ -104,3 +104,110 @@ De regenboogvector wordt berekend door:
 - [ ] Uitgebreide context analyse
 - [ ] Custom agent training
 - [ ] API integratie
+
+## Features
+
+- **Multi-Color Space Support**:
+  - RGB color space for basic color representation
+  - CMYK color space for print-ready color analysis
+  - CIE 1976 LAB color space for perceptually uniform color analysis
+  - Chroma and hue angle calculations for detailed color analysis
+
+- **Emotion Analysis**:
+  - Analyzes text input for emotional content
+  - Maps emotions to color weights
+  - Calculates dominant emotions and strategies
+  - Provides color-based emotional feedback
+
+- **Color Conversion**:
+  - RGB ↔ CMYK conversion
+  - RGB ↔ LAB conversion
+  - XYZ color space intermediate conversions
+  - Chroma and hue angle calculations
+  - Color blending with weights
+
+- **Visualization**:
+  - Interactive color space visualization
+  - Real-time color updates
+  - Multiple color space views
+  - Emotion-to-color mapping display
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/re-monster.git
+cd re-monster
+```
+
+2. Create and activate a virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+
+1. Start the application:
+```bash
+streamlit run app.py
+```
+
+2. Enter text in the input field to analyze its emotional content.
+
+3. View the results:
+   - Color analysis in multiple color spaces
+   - Dominant emotions and their weights
+   - Suggested response strategy
+   - Color visualization
+
+## Color Spaces
+
+### RGB
+- Standard color space for digital displays
+- Values range from 0-255 for each channel
+- Direct representation of screen colors
+
+### CMYK
+- Print-oriented color space
+- Values range from 0-1 for each channel
+- Better suited for physical color representation
+
+### CIE 1976 LAB
+- Perceptually uniform color space
+- L*: Lightness (0-100)
+- a*: Green-Red axis (-128 to 127)
+- b*: Blue-Yellow axis (-128 to 127)
+- Includes chroma and hue angle calculations
+
+## API Reference
+
+### ColorConverter
+- `rgb_to_cmyk(r, g, b)`: Convert RGB to CMYK
+- `cmyk_to_rgb(c, m, y, k)`: Convert CMYK to RGB
+- `rgb_to_lab(r, g, b)`: Convert RGB to LAB
+- `lab_to_rgb(l, a, b)`: Convert LAB to RGB
+- `calculate_chroma(a, b)`: Calculate color chroma
+- `calculate_hue_angle(a, b)`: Calculate hue angle
+
+### ColorEmotionInterpreter
+- `analyze_context(text)`: Analyze text for emotional content
+- `get_emotional_score(context, color_weights)`: Calculate emotional scores
+- `determine_strategy(emotional_scores, cmyk_vector)`: Determine response strategy
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

@@ -124,6 +124,7 @@ def main():
         for color, feedback in response['agent_feedbacks'].items():
             if feedback['confidence'] > 0:
                 st.write(f"\n{color.upper()} Agent:")
+                st.write(f"Kleur: {feedback['color']}")
                 st.write(f"Confidence: {feedback['confidence']:.2f}")
                 st.write(f"Suggestion: {feedback['suggestion']}")
                 st.write("Emoties:", feedback['emotion_scores'])
